@@ -1,6 +1,6 @@
 #include "lib/lib.hpp"
 
-std::vector<std::vector<bool>> grid(GRID_WIDTH, std::vector<bool>(GRID_HEIGHT, 0));
+std::vector<std::vector<int>> grid(GRID_WIDTH, std::vector<int>(GRID_HEIGHT, 0));
 auto* window = GetWindow();
 
 inline int randomgen(int min, int max);
@@ -25,7 +25,7 @@ void InitializeGliderPattern() {
 }
 
 void AddRandom() {
-    int cellNumber = randomgen(1000, 3000);
+    int cellNumber = randomgen(100, 300);
     for (int i = 0; i < cellNumber; ++i) {
         int y = randomgen(0, GRID_WIDTH - 1);
         int x = randomgen(0, GRID_HEIGHT - 1);
@@ -73,7 +73,7 @@ int CountAliveNeighbors(int x, int y) {
         int neighborY = y + offsetsY[i];
 
         if (neighborX >= 0 && neighborX < GRID_WIDTH && neighborY >= 0 && neighborY < GRID_HEIGHT) {
-            if (grid[neighborX][neighborY] == 1) {
+            if (grid[neighborX][neighborY] != 0) {
                 aliveNeighbors++;
             }
         }
@@ -83,19 +83,23 @@ int CountAliveNeighbors(int x, int y) {
 }
 
 void UpdateGrid() {
-    std::vector<std::vector<bool>> newGrid = grid;
+    std::vector<std::vector<int>> newGrid = grid;
 
     for (int x = 0; x < GRID_WIDTH; ++x) {
         for (int y = 0; y < GRID_HEIGHT; ++y) {
             int aliveNeighbors = CountAliveNeighbors(x, y);
 
-            if (grid[x][y] == 1) {
-                if (aliveNeighbors < 2 || aliveNeighbors > 3) {
-                    newGrid[x][y] = 0;
+            if (grid[x][y] != C_BLACK) {
+                if (aliveNeighbors == 2)
+                    newGrid[x][y] = C_YELLOW;
+                else if (aliveNeighbors == 3)
+                    newGrid[x][y] = C_RED;
+                else if (aliveNeighbors < 2 || aliveNeighbors > 3) {
+                    newGrid[x][y] = C_BLACK;
                 }
             } else {
                 if (aliveNeighbors == 3) {
-                    newGrid[x][y] = 1;
+                    newGrid[x][y] = C_GREEN;
                 }
             }
         }
@@ -109,7 +113,7 @@ void DrawGrid() {
 
     for (int x = 0; x < GRID_WIDTH; ++x) {
         for (int y = 0; y < GRID_HEIGHT; ++y) {
-            SetCellColor(&cell, grid[x][y] == 1);
+            SetCellColor(&cell, grid[x][y]);
             SetCellPosition(&cell, x * CELL_SIZE, y * CELL_SIZE);
             window->draw(cell);
         }

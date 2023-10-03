@@ -12,10 +12,29 @@ extern sf::RectangleShape CreateCell(int size_x, int size_y) {
     return sf::RectangleShape(sf::Vector2f(CELL_SIZE, CELL_SIZE));
 }
 
-// 0 -- white
-// 1 -- black
-extern void SetCellColor(sf::RectangleShape* cell, bool color) {
-    cell->setFillColor(color? sf::Color::Black : sf::Color::White);
+extern void SetCellColor(sf::RectangleShape* cell, int color) {
+    sf::Color set_color = sf::Color::Magenta;
+    switch (CellColors(color))
+    {
+    case C_WHITE:
+        set_color = sf::Color::White;
+        break;
+    case C_BLACK:
+        set_color = sf::Color::Black;
+        break;
+    case C_RED:
+        set_color = sf::Color::Red;
+        break;
+    case C_GREEN:
+        set_color = sf::Color::Green;
+        break;
+    case C_YELLOW:
+        set_color = sf::Color::Yellow;
+        break;
+    default:
+        break;
+    }
+    cell->setFillColor(set_color);
 }
 
 extern void SetCellPosition(sf::RectangleShape* cell, int x, int y) {
