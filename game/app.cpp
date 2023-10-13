@@ -70,23 +70,12 @@ void DrawGrid() {
     }
 }
 
-void DumpGrid() {
-    for (int x = 0; x < GRID_WIDTH; ++x) {
-        for (int y = 0; y < GRID_HEIGHT; ++y) {
-            printf("%d ", grid[x][y]);
-        }
-        printf("\n");
-    }
-}
-
-
 void app() {
 
     InitGrid();
 
     while (true) {
         UpdateGrid();
-        //DumpGrid();
         DrawGrid();
         Lib_Display();
     }
