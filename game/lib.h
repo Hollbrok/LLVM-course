@@ -1,4 +1,4 @@
-#include <SFML/Graphics.hpp>
+#include <stdio.h>
 
 #define CELL_SIZE 5
 #define GRID_X 120

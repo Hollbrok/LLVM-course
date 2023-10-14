@@ -1,9 +1,11 @@
-#include "lib/lib.h"
+
+#include "lib.h"
 
 //int grid[GRID_X][GRID_Y];
 
 void InitGrid(int grid[][GRID_X]) {
     int cellNumber = Lib_Rand(1000, 2000);
+    printf("0\n");
     for (int i = 0; i < cellNumber; ++i) {
         int y = Lib_Rand(0, GRID_X - 1);
         int x = Lib_Rand(0, GRID_Y - 1);
@@ -74,7 +76,7 @@ void app() {
     int grid[GRID_X][GRID_Y] = {};
     InitGrid(grid);
 
-    while (true) {
+    while (1) {
         UpdateGrid(&grid);
         DrawGrid(grid);
         Lib_Display();
