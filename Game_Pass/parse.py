@@ -1,5 +1,7 @@
 import re
 import enum
+from collections import Counter
+
 
 class InstrType(enum.IntEnum):
     Undefinied = 0
@@ -56,7 +58,7 @@ class TraceRecord:
         if match:
             self.match = True
             self.type = match.group(1)
-            self.func = match.group(2)
+            #self.func = match.group(2)
             self.opname = match.group(3)
         else: # Log All func was called
             self.match = False
@@ -64,7 +66,7 @@ class TraceRecord:
 
     def __str__(self):
         if self.match:
-            return f"{self.type} {self.func} {self.opname}"
+            return f"{self.type} {self.opname}"
         else:
             return "None"#f"[ERR] No match to pattern"
         
@@ -101,7 +103,7 @@ class Trace:
         if not self.valid_trace:
             return "Trace status: Invalid"
         else:
-            return f"Trace status: Valid\n" + self.get_count_instr_type_str()
+            return f"Trace status: Valid\nInstructions types counter:\n" + self.get_count_instr_type_str()
     
     # count how many uses for each instruction type
     def count_instr_type(self):
@@ -112,11 +114,39 @@ class Trace:
         for trace_record in self.trace_records:
             trace_record.match_type()
             self.count_list[trace_record.instr_type] += 1
- 
-        #print(f"Count List:\n{self.count_list}")
+    
+    # dump pattern with different metrics (occurs): iter_step, 2itere_step, ..., iter_number * iter_step 
+    def dump_patterns(self, iter_number, iter_step):
+        self.find_all_frequent_patterns(9)
+        for i in range(1, iter_number + 1):
+            self.print_frequent_patterns(i * iter_step)
+
+    # from all find patterns choose that ones that >= min_occurs
+    # and print it
+    def print_frequent_patterns(self, min_occurs):
+        print(f"################ min repeat: {min_occurs} ################")
+        for i in range(len(self.patterns)):
+            print(f"<Pattern len = {i+2}>:")
+            print(f"{[[pattern, count] for pattern, count in self.patterns[i].items() if count >= min_occurs]}")
+            print(f"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+        print(f"##################################################")
 
 
+    # find pattern for different lengthes: from 2 to max_len
+    def find_all_frequent_patterns(self, max_len):
+        self.patterns = []
+        for patter_len in range(2, max_len + 1): # 2 -- min len of pattern, (10-1) -- max len of pattern
+            self.patterns.append(self.find_frequent_patterns(patter_len))
 
+    # find pattern w/ specific length: pattern_length
+    def find_frequent_patterns(self, pattern_length=2):
+        records = [ record.opname for record in self.trace_records]
+        patterns = []
+        for i in range(len(records) - pattern_length + 1):
+            pattern = tuple(records[i:i + pattern_length])
+            patterns.append(pattern)
+
+        return Counter(patterns)
 
 
 def file_to_lines(filepath):
@@ -124,22 +154,34 @@ def file_to_lines(filepath):
     with open (filepath, 'r') as f:
         lines = [line for line in f]
         print(f"Lines: {len(lines)}")
-        return lines[0:6000000]
+        return lines#[0:10000000]
 
 
 def main():
-    file_lines = file_to_lines("log.txt")
-    print("[State] File loaded")
-    trace_records = [TraceRecord(line) for line in file_lines]
-    print("[State] Trace records builded")
-    trace = Trace(trace_records)
-    print("[State] Trace builded")
-    trace.count_instr_type()
-    print("[State] Instructions types counted")
-    print(trace)
+    #file_lines = file_to_lines("log.txt")
+    #print("[State] File loaded")
+    with open ("log.txt", 'r') as f:
+        lines = f.readlines()
+        print("\t[Done] File reading")
+        lines = lines[:3000000]
+        trace_records = [TraceRecord(line) for line in lines]
+        print("\t[Done] Records parsing")
+
+        trace = Trace(trace_records)
+        print("\t[Done] Trace building")
+
+        trace.count_instr_type()
+        print("\t[Done] Instructions types counted")
+
+        trace.dump_patterns(13, 5000)
+
+        print(trace)
+        print("\t[Done] Dumping patterns")
+
 
 
 
 if __name__ == "__main__":
+    print("Start of trace analysis:")
     main()
-    print("[Done]")
+    print("[Done] Anaysis")
