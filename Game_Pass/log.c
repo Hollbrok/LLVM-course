@@ -9,6 +9,7 @@ void funcStartLogger(char* funcName, long int valID){
 
 // [x]
 void funcEndLogger(char* funcName, long int valID){
+    return;
     // ret <from>
     printf("[Ret] %s\n", funcName);
 }

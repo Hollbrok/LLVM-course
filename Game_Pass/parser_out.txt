@@ -1,0 +1,19 @@
+[State] File loaded
+[State] Trace records builded
+[State] Trace builded
+[State] Instructions types counted
+Trace status: Valid
+[Undefinied] 0
+[Call] 516369
+[Cmp] 601434
+[Bin] 305832
+[alloca] 101707
+[cast] 947025
+[Addr Op] 455761
+[Cond br] 601434
+[Uncond br] 367436
+[Store] 393250
+[Load] 1709752
+[LA] 0
+
+[Done]
