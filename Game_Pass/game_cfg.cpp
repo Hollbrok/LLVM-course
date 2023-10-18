@@ -123,7 +123,11 @@ namespace
         {
           Value *valueAddr =
               ConstantInt::get(builder.getInt64Ty(), (int64_t)(&I));
-          if (auto *call = dyn_cast<CallInst>(&I))
+          
+          if (auto *op = dyn_cast<PHINode>(&I)) {
+            continue;
+          }
+          else if (auto *call = dyn_cast<CallInst>(&I))
           {
             builder.SetInsertPoint(call);
 
@@ -250,5 +254,5 @@ static void registerMyPass(const PassManagerBuilder &,
   PM.add(new MyPass());
 }
 static RegisterStandardPasses
-    RegisterMyPass(PassManagerBuilder::EP_EarlyAsPossible,
+    RegisterMyPass(PassManagerBuilder::EP_OptimizerLast,
                    registerMyPass);
