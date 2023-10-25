@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <assert.h>
 #include <SDL2/SDL.h>
 #include <time.h>
@@ -18,7 +17,6 @@ extern void app();
 
 int main() {
     GameInit();
-    printf("XXXX\n");
     app();    
     return EXIT_SUCCESS;
 }
@@ -37,6 +35,26 @@ void GameInit() {
 int randomgen(int min, int max)
 {
     return rand() % (max - min + 1) + min;
+}
+
+int Lib_CountAliveNeighbors(int grid[GRID_Y][GRID_X], int x, int y) {
+    int aliveNeighbors = 0;
+
+    int offsetsX[] = { -1, 0, 1, -1, 1, -1, 0, 1 };
+    int offsetsY[] = { -1, -1, -1, 0, 0, 1, 1, 1 };
+
+    for (int i = 0; i < 8; ++i) {
+        int neighborX = x + offsetsX[i];
+        int neighborY = y + offsetsY[i];
+
+        if (neighborX >= 0 && neighborX < GRID_X && neighborY >= 0 && neighborY < GRID_Y) {
+            if (grid[neighborX][neighborY] == 1) {
+                aliveNeighbors++;
+            }
+        }
+    }
+
+    return aliveNeighbors;
 }
 
 void Lib_DrawCell(int x, int y, int color) {
