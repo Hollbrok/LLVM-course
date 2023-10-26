@@ -4,7 +4,7 @@
 // [x]
 void funcStartLogger(char* funcName, long int valID){
     return;
-    printf("[LOG] %s %s\n", funcName);
+    printf("[LOG] %s\n", funcName);
 }
 
 // [x]
