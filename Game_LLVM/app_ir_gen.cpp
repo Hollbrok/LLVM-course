@@ -1,3 +1,105 @@
+#include <assert.h>
+#include <SDL2/SDL.h>
+#include <time.h>
+#include "../Game/lib.h"
+
+#define FRAME_TICKS 50
+
+static SDL_Renderer *Renderer = NULL;
+static SDL_Window *Window = NULL;
+static SDL_Rect Cell;
+
+static Uint32 Ticks = 0;
+
+void GameInit();
+
+void GameInit() {
+    SDL_Init(SDL_INIT_VIDEO);
+    SDL_CreateWindowAndRenderer(GRID_X * CELL_SIZE, GRID_Y * CELL_SIZE, 0, &Window, &Renderer);
+    SDL_SetRenderDrawColor(Renderer, 0, 0, 0, 0);
+    SDL_RenderClear(Renderer);
+
+    Cell.w = CELL_SIZE;
+    Cell.h = CELL_SIZE;
+    srand(time(NULL));
+}
+
+int randomgen(int min, int max)
+{
+    return rand() % (max - min + 1) + min;
+}
+
+int Lib_CountAliveNeighbors(int grid[GRID_Y][GRID_X], int x, int y) {
+    int aliveNeighbors = 0;
+
+    int offsetsX[] = { -1, 0, 1, -1, 1, -1, 0, 1 };
+    int offsetsY[] = { -1, -1, -1, 0, 0, 1, 1, 1 };
+
+    for (int i = 0; i < 8; ++i) {
+        int neighborX = x + offsetsX[i];
+        int neighborY = y + offsetsY[i];
+
+        if (neighborX >= 0 && neighborX < GRID_X && neighborY >= 0 && neighborY < GRID_Y) {
+            if (grid[neighborX][neighborY] == 1) {
+                aliveNeighbors++;
+            }
+        }
+    }
+
+    return aliveNeighbors;
+}
+
+void Lib_DrawCell(int x, int y, int color) {
+    Cell.x = x * CELL_SIZE;
+    Cell.y = y * CELL_SIZE;
+    if (color) {// black
+        SDL_SetRenderDrawColor(Renderer, 255, 255, 255, 255);
+    } else {
+        SDL_SetRenderDrawColor(Renderer, 0, 0, 0, 0);
+    }
+    
+    // Render rect
+    SDL_RenderFillRect(Renderer, &Cell);
+}
+
+void Lib_Display() {
+    SDL_PumpEvents();
+    assert(SDL_TRUE != SDL_HasEvent(SDL_QUIT) && "User-requested quit");
+    Uint32 cur_ticks = SDL_GetTicks() - Ticks;
+    if (cur_ticks < FRAME_TICKS)
+    {
+        SDL_Delay(FRAME_TICKS - cur_ticks);
+    }
+    SDL_RenderPresent(Renderer);
+}
+
+int Lib_Rand(int min, int max) {
+    return randomgen(min, max);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
 #include "llvm/ExecutionEngine/GenericValue.h"
 #include "llvm/IR/IRBuilder.h"
@@ -14,6 +116,8 @@ int main()
     // source_filename = "app.c"
     Module *module = new Module("app.c", context);
     IRBuilder<> builder(context);
+    // Attribute builder tool
+    AttrBuilder attr_builder{};
 
     // declare dso_local i32 @Lib_Rand(i32, i32) local_unnamed_addr #2
     Type *voidType = Type::getVoidTy(context);
@@ -93,30 +197,31 @@ int main()
 
     //  #########################  BB 0  #########################
     builder.SetInsertPoint(BB0);
-    // Allocate memory
+    // %1 = alloca [120 x [120 x i32]], align 16
     Value *alloca1 = builder.CreateAlloca(ArrayType::get(ArrayType::get(builder.getInt32Ty(), 120), 120), nullptr);
+    // %2 = alloca [120 x [120 x i32]], align 16
     Value *alloca2 = builder.CreateAlloca(ArrayType::get(ArrayType::get(builder.getInt32Ty(), 120), 120), nullptr);
 
-    // Bitcast
-    Value *bitcast2 = builder.CreateBitCast(alloca2, builder.getInt8PtrTy());
+    // %3 = bitcast [120 x [120 x i32]]* %2 to i8*
+    Value *bitcast3 = builder.CreateBitCast(alloca2, builder.getInt8PtrTy());
 
     // Call llvm.lifetime.start.p0i8
-    Value *lifetimeStartArgs[] = {builder.getInt64(57600), bitcast2};
+    Value *lifetimeStartArgs[] = {builder.getInt64(57600), bitcast3};
     builder.CreateCall(module->getFunction("llvm.lifetime.start.p0i8"), lifetimeStartArgs);
 
     // Call llvm.memset.p0i8.i64
-    Value *memsetArgs[] = {bitcast2, builder.getInt8(0), builder.getInt64(57600), builder.getInt1(false)};
+    Value *memsetArgs[] = {bitcast3, builder.getInt8(0), builder.getInt64(57600), builder.getInt1(false)};
     builder.CreateCall(module->getFunction("llvm.memset.p0i8.i64"), memsetArgs);
 
-    // Call Lib_Rand
+    // %4 = call i32 @Lib_Rand(i32 1000, i32 2000)
     Value *libRandArgs[] = {builder.getInt32(1000), builder.getInt32(2000)};
     Value *callLibRand = builder.CreateCall(libRandFunc, libRandArgs);
 
-    // Compare
-    Value *icmp = builder.CreateICmpSGT(callLibRand, builder.getInt32(0));
+    // %5 = icmp sgt i32 %4, 0
+    Value *icmp5 = builder.CreateICmpSGT(callLibRand, builder.getInt32(0));
 
-    // Branch
-    builder.CreateCondBr(icmp, BB9, BB6);
+    // br i1 %5, label %9, label %6
+    builder.CreateCondBr(icmp5, BB9, BB6);
 
     //  #########################  BB 6  #########################
     builder.SetInsertPoint(BB6);
@@ -554,5 +659,35 @@ int main()
     // Dump LLVM IR
     module->print(outs(), nullptr);
 
+    // Interpreter of LLVM IR
+    outs() << "Running code...\n";
+    InitializeNativeTarget();
+    InitializeNativeTargetAsmPrinter();
+
+    ExecutionEngine *ee = EngineBuilder(std::unique_ptr<Module>(module)).create();
+    ee->InstallLazyFunctionCreator([&](const std::string &fnName) -> void * {
+        if (fnName == "Lib_Rand") {
+            return reinterpret_cast<void *>(Lib_Rand);
+        }
+        if (fnName == "Lib_DrawCell") {
+            return reinterpret_cast<void *>(Lib_DrawCell);
+        }
+        if (fnName == "Lib_Display") {
+            return reinterpret_cast<void *>(Lib_Display);
+        }
+        if (fnName == "Lib_CountAliveNeighbors") {
+            return reinterpret_cast<void *>(Lib_CountAliveNeighbors);
+        }
+        return nullptr;
+    });
+    ee->finalizeObject();
+
+    GameInit();
+
+    ArrayRef<GenericValue> noargs;
+    GenericValue v = ee->runFunction(appFunc, noargs);
+    outs() << "Code was run.\n";
+
+    // simExit();
     return EXIT_SUCCESS;
 }
