@@ -13,7 +13,8 @@ static Uint32 Ticks = 0;
 
 void GameInit();
 
-void GameInit() {
+void GameInit()
+{
     SDL_Init(SDL_INIT_VIDEO);
     SDL_CreateWindowAndRenderer(GRID_X * CELL_SIZE, GRID_Y * CELL_SIZE, 0, &Window, &Renderer);
     SDL_SetRenderDrawColor(Renderer, 0, 0, 0, 0);
@@ -29,18 +30,22 @@ int randomgen(int min, int max)
     return rand() % (max - min + 1) + min;
 }
 
-int Lib_CountAliveNeighbors(int grid[GRID_Y][GRID_X], int x, int y) {
+int Lib_CountAliveNeighbors(int grid[GRID_Y][GRID_X], int x, int y)
+{
     int aliveNeighbors = 0;
 
-    int offsetsX[] = { -1, 0, 1, -1, 1, -1, 0, 1 };
-    int offsetsY[] = { -1, -1, -1, 0, 0, 1, 1, 1 };
+    int offsetsX[] = {-1, 0, 1, -1, 1, -1, 0, 1};
+    int offsetsY[] = {-1, -1, -1, 0, 0, 1, 1, 1};
 
-    for (int i = 0; i < 8; ++i) {
+    for (int i = 0; i < 8; ++i)
+    {
         int neighborX = x + offsetsX[i];
         int neighborY = y + offsetsY[i];
 
-        if (neighborX >= 0 && neighborX < GRID_X && neighborY >= 0 && neighborY < GRID_Y) {
-            if (grid[neighborX][neighborY] == 1) {
+        if (neighborX >= 0 && neighborX < GRID_X && neighborY >= 0 && neighborY < GRID_Y)
+        {
+            if (grid[neighborX][neighborY] == 1)
+            {
                 aliveNeighbors++;
             }
         }
@@ -49,20 +54,25 @@ int Lib_CountAliveNeighbors(int grid[GRID_Y][GRID_X], int x, int y) {
     return aliveNeighbors;
 }
 
-void Lib_DrawCell(int x, int y, int color) {
+void Lib_DrawCell(int x, int y, int color)
+{
     Cell.x = x * CELL_SIZE;
     Cell.y = y * CELL_SIZE;
-    if (color) {// black
+    if (color)
+    { // black
         SDL_SetRenderDrawColor(Renderer, 255, 255, 255, 255);
-    } else {
+    }
+    else
+    {
         SDL_SetRenderDrawColor(Renderer, 0, 0, 0, 0);
     }
-    
+
     // Render rect
     SDL_RenderFillRect(Renderer, &Cell);
 }
 
-void Lib_Display() {
+void Lib_Display()
+{
     SDL_PumpEvents();
     assert(SDL_TRUE != SDL_HasEvent(SDL_QUIT) && "User-requested quit");
     Uint32 cur_ticks = SDL_GetTicks() - Ticks;
@@ -73,32 +83,10 @@ void Lib_Display() {
     SDL_RenderPresent(Renderer);
 }
 
-int Lib_Rand(int min, int max) {
+int Lib_Rand(int min, int max)
+{
     return randomgen(min, max);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
 #include "llvm/ExecutionEngine/GenericValue.h"
@@ -122,7 +110,7 @@ int main()
     // declare dso_local i32 @Lib_Rand(i32, i32) local_unnamed_addr #2
     Type *voidType = Type::getVoidTy(context);
     ArrayType *row_120_Type = ArrayType::get(Type::getInt32Ty(context), 120);
-    
+
     FunctionType *libRandType = FunctionType::get(builder.getInt32Ty(), {builder.getInt32Ty(), builder.getInt32Ty()}, false);
     FunctionCallee libRandFunc = module->getOrInsertFunction("Lib_Rand", libRandType);
 
@@ -135,13 +123,12 @@ int main()
     FunctionType *libDisplayFuncType = FunctionType::get(builder.getVoidTy(), /* isVarArg */ true);
     FunctionCallee libDisplayFunc = module->getOrInsertFunction("Lib_Display", libDisplayFuncType);
 
-
     // declare void @llvm.lifetime.start.p0i8(i64 immarg, i8* nocapture) #1
     ArrayRef<Type *> llvm_lifetime_start_ParamTypes = {builder.getInt64Ty(),
                                                        builder.getInt8Ty()->getPointerTo()};
     FunctionType *llvm_lifetime_start_Type =
         FunctionType::get(builder.getVoidTy(), llvm_lifetime_start_ParamTypes, false);
-    
+
     FunctionCallee llvm_lifetime_start_p0i8_Func =
         module->getOrInsertFunction("llvm.lifetime.start.p0i8", llvm_lifetime_start_Type);
     FunctionCallee llvm_lifetime_end_p0i8_Func =
@@ -161,7 +148,8 @@ int main()
 
     // declare dso_local i32 @Lib_CountAliveNeighbors([120 x i32]*, i32, i32) local_unnamed_addr #2
     ArrayRef<Type *> Lib_CountAliveNeighbors_ParamTypes = {
-        row_120_Type, builder.getInt32Ty(),
+        row_120_Type,
+        builder.getInt32Ty(),
         builder.getInt32Ty(),
     };
     FunctionType *Lib_CountAliveNeighbors_Type =
@@ -198,24 +186,31 @@ int main()
     //  #########################  BB 0  #########################
     builder.SetInsertPoint(BB0);
     // %1 = alloca [120 x [120 x i32]], align 16
-    Value *alloca1 = builder.CreateAlloca(ArrayType::get(ArrayType::get(builder.getInt32Ty(), 120), 120), nullptr);
+    llvm::AllocaInst *alloca1 = builder.CreateAlloca(ArrayType::get(ArrayType::get(builder.getInt32Ty(), 120), 120), nullptr);
+    alloca1->setAlignment(llvm::Align(16));
     // %2 = alloca [120 x [120 x i32]], align 16
-    Value *alloca2 = builder.CreateAlloca(ArrayType::get(ArrayType::get(builder.getInt32Ty(), 120), 120), nullptr);
+    llvm::AllocaInst *alloca2 = builder.CreateAlloca(ArrayType::get(ArrayType::get(builder.getInt32Ty(), 120), 120), nullptr);
+    alloca2->setAlignment(llvm::Align(16));
 
     // %3 = bitcast [120 x [120 x i32]]* %2 to i8*
     Value *bitcast3 = builder.CreateBitCast(alloca2, builder.getInt8PtrTy());
 
     // Call llvm.lifetime.start.p0i8
     Value *lifetimeStartArgs[] = {builder.getInt64(57600), bitcast3};
-    builder.CreateCall(module->getFunction("llvm.lifetime.start.p0i8"), lifetimeStartArgs);
+    llvm::CallInst *lifetimeStartCall_instr = builder.CreateCall(module->getFunction("llvm.lifetime.start.p0i8"), lifetimeStartArgs);
+    lifetimeStartCall_instr->addParamAttr(1, llvm::Attribute::NonNull);
 
     // Call llvm.memset.p0i8.i64
     Value *memsetArgs[] = {bitcast3, builder.getInt8(0), builder.getInt64(57600), builder.getInt1(false)};
-    builder.CreateCall(module->getFunction("llvm.memset.p0i8.i64"), memsetArgs);
+    llvm::CallInst *memsetCall_instr = builder.CreateCall(module->getFunction("llvm.memset.p0i8.i64"), memsetArgs);
+    memsetCall_instr->addParamAttr(0, llvm::Attribute::NonNull);
+    memsetCall_instr->addParamAttr(0, llvm::Attribute::getWithAlignment(context, llvm::Align(16)));
+    memsetCall_instr->addParamAttr(0, llvm::Attribute::getWithDereferenceableBytes(context, 57600));
+
 
     // %4 = call i32 @Lib_Rand(i32 1000, i32 2000)
     Value *libRandArgs[] = {builder.getInt32(1000), builder.getInt32(2000)};
-    Value *callLibRand = builder.CreateCall(libRandFunc, libRandArgs);
+    Value *callLibRand = builder.CreateCall(module->getFunction("Lib_Rand"), libRandArgs);
 
     // %5 = icmp sgt i32 %4, 0
     Value *icmp5 = builder.CreateICmpSGT(callLibRand, builder.getInt32(0));
@@ -229,7 +224,7 @@ int main()
     Value *bitcast7 = builder.CreateBitCast(alloca1, builder.getInt8PtrTy());
     // %8 = getelementptr inbounds [120 x [120 x i32]], [120 x [120 x i32]]* %2, i64 0, i64 0
     Value *indices1[] = {builder.getInt64(0), builder.getInt64(0)};
-    Value *getelementptr8 = builder.CreateGEP(alloca2, indices1);
+    Value *getelementptr8 = builder.CreateInBoundsGEP(alloca2, indices1);
     builder.CreateBr(BB18);
 
     //  #########################  BB 9  #########################
@@ -239,11 +234,11 @@ int main()
 
     // %11 = tail call i32 @Lib_Rand(i32 0, i32 119) #3
     Value *libRandArgs2[] = {builder.getInt32(0), builder.getInt32(119)};
-    Value *callLibRand2 = builder.CreateCall(libRandFunc, libRandArgs2);
+    Value *callLibRand2 = builder.CreateCall(module->getFunction("Lib_Rand"), libRandArgs2);
 
     // %12 = tail call i32 @Lib_Rand(i32 0, i32 119) #3
     Value *libRandArgs3[] = {builder.getInt32(0), builder.getInt32(119)};
-    Value *callLibRand3 = builder.CreateCall(libRandFunc, libRandArgs3);
+    Value *callLibRand3 = builder.CreateCall(module->getFunction("Lib_Rand"), libRandArgs3);
 
     // %13 = sext i32 %12 to i64
     Value *sext13 = builder.CreateSExt(callLibRand3, builder.getInt64Ty());
@@ -253,7 +248,7 @@ int main()
 
     // %15 = getelementptr inbounds [120 x [120 x i32]], [120 x [120 x i32]]* %2, i64 0, i64 %13, i64 %14
     Value *indices2[] = {builder.getInt64(0), sext13, sext14};
-    Value *getelementptr15 = builder.CreateGEP(alloca2, indices2);
+    Value *getelementptr15 = builder.CreateInBoundsGEP(alloca2, indices2);
 
     // store i32 1, i32* %15, align 4, !tbaa !2
     builder.CreateStore(builder.getInt32(1), getelementptr15);
@@ -277,9 +272,10 @@ int main()
 
     // call void @llvm.lifetime.start.p0i8(i64 57600, i8* nonnull %7)
     Value *llvmLifetimeStartArgs[] = {builder.getInt64(57600), bitcast7};
-    FunctionType *llvmLifetimeStartType = FunctionType::get(builder.getVoidTy(), {builder.getInt64Ty(), builder.getInt8PtrTy()}, false);
-    FunctionCallee llvmLifetimeStartFunc = module->getOrInsertFunction("llvm.lifetime.start.p0i8", llvmLifetimeStartType);
-    builder.CreateCall(llvmLifetimeStartFunc, llvmLifetimeStartArgs);
+    // FunctionType *llvmLifetimeStartType = FunctionType::get(builder.getVoidTy(), {builder.getInt64Ty(), builder.getInt8PtrTy()}, false);
+    // FunctionCallee llvmLifetimeStartFunc = module->getOrInsertFunction("llvm.lifetime.start.p0i8", llvmLifetimeStartType);
+    llvm::CallInst *lifetimeStartCall_instr_2 = builder.CreateCall(module->getFunction("llvm.lifetime.start.p0i8"), llvmLifetimeStartArgs);
+    lifetimeStartCall_instr_2->addParamAttr(1, llvm::Attribute::NonNull);
 
     // br label %19
     builder.CreateBr(BB19);
@@ -308,11 +304,16 @@ int main()
         bitcast22,
         bitcast24,
         builder.getInt64(480),
-        builder.getInt1(false)
-    };
+        builder.getInt1(false)};
     FunctionType *memcpyType = FunctionType::get(builder.getVoidTy(), {builder.getInt8PtrTy(), builder.getInt8PtrTy(), builder.getInt64Ty(), builder.getInt1Ty()}, false);
-    FunctionCallee memcpyFunc = module->getOrInsertFunction("llvm.memcpy.p0i8.p0i8.i64", memcpyType);
-    builder.CreateCall(memcpyFunc, memcpyArgs);
+    FunctionCallee memcpyFunc1 = module->getOrInsertFunction("llvm.memcpy.p0i8.p0i8.i64", memcpyType);
+    llvm::CallInst *memcpyCall_instr_1 = builder.CreateCall(memcpyFunc1, memcpyArgs);
+    memcpyCall_instr_1->addParamAttr(0, llvm::Attribute::NonNull);
+    memcpyCall_instr_1->addParamAttr(0, llvm::Attribute::getWithAlignment(context, llvm::Align(16)));
+    memcpyCall_instr_1->addParamAttr(0, llvm::Attribute::getWithDereferenceableBytes(context, 480));
+    memcpyCall_instr_1->addParamAttr(1, llvm::Attribute::NonNull);
+    memcpyCall_instr_1->addParamAttr(1, llvm::Attribute::getWithAlignment(context, llvm::Align(16)));
+    memcpyCall_instr_1->addParamAttr(1, llvm::Attribute::getWithDereferenceableBytes(context, 480));
 
     // %25 = add nuw nsw i64 %20, 1
     Value *val25 = builder.CreateNUWAdd(val20, builder.getInt64(1));
@@ -335,10 +336,16 @@ int main()
         bitcast27,
         bitcast29,
         builder.getInt64(480),
-        builder.getInt1(false)
-    };
+        builder.getInt1(false)};
     FunctionCallee memcpyFunc2 = module->getOrInsertFunction("llvm.memcpy.p0i8.p0i8.i64", memcpyType);
-    builder.CreateCall(memcpyFunc2, memcpyArgs2);
+    llvm::CallInst *memcpyCall_instr_2 = builder.CreateCall(memcpyFunc2, memcpyArgs2);
+    memcpyCall_instr_2->addParamAttr(0, llvm::Attribute::NonNull);
+    memcpyCall_instr_2->addParamAttr(0, llvm::Attribute::getWithAlignment(context, llvm::Align(16)));
+    memcpyCall_instr_2->addParamAttr(0, llvm::Attribute::getWithDereferenceableBytes(context, 480));
+    memcpyCall_instr_2->addParamAttr(1, llvm::Attribute::NonNull);
+    memcpyCall_instr_2->addParamAttr(1, llvm::Attribute::getWithAlignment(context, llvm::Align(16)));
+    memcpyCall_instr_2->addParamAttr(1, llvm::Attribute::getWithDereferenceableBytes(context, 480));
+
 
     // %30 = add nuw nsw i64 %20, 2
     Value *val30 = builder.CreateNUWAdd(val20, builder.getInt64(2));
@@ -361,10 +368,16 @@ int main()
         bitcast32,
         bitcast34,
         builder.getInt64(480),
-        builder.getInt1(false)
-    };
+        builder.getInt1(false)};
     FunctionCallee memcpyFunc3 = module->getOrInsertFunction("llvm.memcpy.p0i8.p0i8.i64", memcpyType);
-    builder.CreateCall(memcpyFunc3, memcpyArgs3);
+    llvm::CallInst *memcpyCall_instr_3 = builder.CreateCall(memcpyFunc3, memcpyArgs3);
+    memcpyCall_instr_3->addParamAttr(0, llvm::Attribute::NonNull);
+    memcpyCall_instr_3->addParamAttr(0, llvm::Attribute::getWithAlignment(context, llvm::Align(16)));
+    memcpyCall_instr_3->addParamAttr(0, llvm::Attribute::getWithDereferenceableBytes(context, 480));
+    memcpyCall_instr_3->addParamAttr(1, llvm::Attribute::NonNull);
+    memcpyCall_instr_3->addParamAttr(1, llvm::Attribute::getWithAlignment(context, llvm::Align(16)));
+    memcpyCall_instr_3->addParamAttr(1, llvm::Attribute::getWithDereferenceableBytes(context, 480));
+
 
     // %35 = add nuw nsw i64 %20, 3
     Value *val35 = builder.CreateNUWAdd(val20, builder.getInt64(3));
@@ -384,7 +397,6 @@ int main()
 
     // %38 = phi i64 [ %41, %40 ], [ 0, %19 ]
     PHINode *val38 = builder.CreatePHI(builder.getInt64Ty(), 2);
-
 
     // %39 = trunc i64 %38 to i32
     Value *val39 = builder.CreateTrunc(val38, builder.getInt32Ty());
@@ -406,25 +418,27 @@ int main()
     val38->addIncoming(builder.getInt64(0), BB19);
 
     // br i1 %42, label %62, label %37
-    Value* test = builder.CreateCondBr(val42, BB62, BB37);
-
+    Value *test = builder.CreateCondBr(val42, BB62, BB37);
 
     //  #########################  BB 43  #########################
     builder.SetInsertPoint(BB43);
     // %44 = phi i64 [ 0, %37 ], [ %60, %59 ]
     PHINode *val44 = builder.CreatePHI(builder.getInt64Ty(), 2);
 
-
     // %45 = trunc i64 %44 to i32
     Value *val45 = builder.CreateTrunc(val44, builder.getInt32Ty());
 
     // %46 = call i32 @Lib_CountAliveNeighbors([120 x i32]* nonnull %8, i32 %39, i32 %45) #3
     Value *args[] = {getelementptr8, val39, val45};
-    Value *val46 = builder.CreateCall(Lib_CountAliveNeighbors_Func, args);
+    //Value *val46 = builder.CreateCall(Lib_CountAliveNeighbors_Func, args);
+    llvm::CallInst *libCountAlive_call = builder.CreateCall(Lib_CountAliveNeighbors_Func, args);
+    libCountAlive_call->addParamAttr(0, llvm::Attribute::NonNull);
+
+
 
     // %47 = getelementptr inbounds [120 x [120 x i32]], [120 x [120 x i32]]* %2, i64 0, i64 %38, i64 %44
     Value *indices3[] = {builder.getInt64(0), val38, val44};
-    Value *val47 = builder.CreateGEP(alloca2, indices3);
+    Value *val47 = builder.CreateInBoundsGEP(alloca2, indices3);
 
     // %48 = load i32, i32* %47, align 4, !tbaa !2
     Value *val48 = builder.CreateLoad(val47);
@@ -437,9 +451,9 @@ int main()
 
     //  #########################  BB 50  #########################
     builder.SetInsertPoint(BB50);
-    
+
     // %51 = and i32 %46, -2
-    Value *val51 = builder.CreateAnd(val46, builder.getInt32(-2));
+    Value *val51 = builder.CreateAnd(libCountAlive_call, builder.getInt32(-2));
 
     // %52 = icmp eq i32 %51, 2
     Value *val52 = builder.CreateICmpEQ(val51, builder.getInt32(2));
@@ -452,7 +466,7 @@ int main()
 
     // %54 = getelementptr inbounds [120 x [120 x i32]], [120 x [120 x i32]]* %1, i64 0, i64 %38, i64 %44
     Value *indices53[] = {builder.getInt64(0), val38, val44};
-    Value *val54 = builder.CreateGEP(alloca1, indices53);
+    Value *val54 = builder.CreateInBoundsGEP(alloca1, indices53);
 
     // store i32 0, i32* %54, align 4, !tbaa !2
     builder.CreateStore(builder.getInt32(0), val54);
@@ -463,7 +477,7 @@ int main()
     builder.SetInsertPoint(BB55);
 
     // %56 = icmp eq i32 %46, 3
-    Value *val56 = builder.CreateICmpEQ(val46, builder.getInt32(3));
+    Value *val56 = builder.CreateICmpEQ(libCountAlive_call, builder.getInt32(3));
 
     // br i1 %56, label %57, label %59
     builder.CreateCondBr(val56, BB57, BB59);
@@ -473,7 +487,7 @@ int main()
 
     // %58 = getelementptr inbounds [120 x [120 x i32]], [120 x [120 x i32]]* %1, i64 0, i64 %38, i64 %44
     Value *indices[] = {builder.getInt64(0), val38, val44};
-    Value *val58 = builder.CreateGEP(alloca1, indices);
+    Value *val58 = builder.CreateInBoundsGEP(alloca1, indices);
 
     // store i32 1, i32* %58, align 4, !tbaa !2
     builder.CreateStore(builder.getInt32(1), val58);
@@ -498,8 +512,8 @@ int main()
 
     // %63 = phi i64 [ %78, %62 ], [ 0, %40 ]
     PHINode *val63 = builder.CreatePHI(builder.getInt64Ty(), 2);
-    
-    // 
+
+    //
     val44->addIncoming(builder.getInt64(0), BB37);
     val44->addIncoming(val60, BB59);
 
@@ -519,7 +533,14 @@ int main()
 
     // Call to llvm.memcpy
     Value *argsMemcpy[] = {val65, val67, builder.getInt64(480), builder.getInt1(false)};
-    builder.CreateCall(memcpyFunc, argsMemcpy);
+    llvm::CallInst *memcpyCall_instr_4 = builder.CreateCall(memcpyFunc1, argsMemcpy);
+    memcpyCall_instr_4->addParamAttr(0, llvm::Attribute::NonNull);
+    memcpyCall_instr_4->addParamAttr(0, llvm::Attribute::getWithAlignment(context, llvm::Align(16)));
+    memcpyCall_instr_4->addParamAttr(0, llvm::Attribute::getWithDereferenceableBytes(context, 480));
+    memcpyCall_instr_4->addParamAttr(1, llvm::Attribute::NonNull);
+    memcpyCall_instr_4->addParamAttr(1, llvm::Attribute::getWithAlignment(context, llvm::Align(16)));
+    memcpyCall_instr_4->addParamAttr(1, llvm::Attribute::getWithDereferenceableBytes(context, 480));
+
 
     // %68 = add nuw nsw i64 %63, 1
     Value *val68 = builder.CreateNUWAdd(val63, builder.getInt64(1));
@@ -540,7 +561,14 @@ int main()
 
     // Call to llvm.memcpy
     Value *argsMemcpy2[] = {val70, val72, builder.getInt64(480), builder.getInt1(false)};
-    builder.CreateCall(memcpyFunc, argsMemcpy2);
+    llvm::CallInst *memcpyCall_instr_5 = builder.CreateCall(memcpyFunc1, argsMemcpy2);
+    memcpyCall_instr_5->addParamAttr(0, llvm::Attribute::NonNull);
+    memcpyCall_instr_5->addParamAttr(0, llvm::Attribute::getWithAlignment(context, llvm::Align(16)));
+    memcpyCall_instr_5->addParamAttr(0, llvm::Attribute::getWithDereferenceableBytes(context, 480));
+    memcpyCall_instr_5->addParamAttr(1, llvm::Attribute::NonNull);
+    memcpyCall_instr_5->addParamAttr(1, llvm::Attribute::getWithAlignment(context, llvm::Align(16)));
+    memcpyCall_instr_5->addParamAttr(1, llvm::Attribute::getWithDereferenceableBytes(context, 480));
+
 
     // %73 = add nuw nsw i64 %63, 2
     Value *val73 = builder.CreateNUWAdd(val63, builder.getInt64(2));
@@ -561,7 +589,14 @@ int main()
 
     // Call to llvm.memcpy
     Value *argsMemcpy3[] = {val75, val77, builder.getInt64(480), builder.getInt1(false)};
-    builder.CreateCall(memcpyFunc, argsMemcpy3);
+    llvm::CallInst *memcpyCall_instr_6 = builder.CreateCall(memcpyFunc1, argsMemcpy3);
+    memcpyCall_instr_6->addParamAttr(0, llvm::Attribute::NonNull);
+    memcpyCall_instr_6->addParamAttr(0, llvm::Attribute::getWithAlignment(context, llvm::Align(16)));
+    memcpyCall_instr_6->addParamAttr(0, llvm::Attribute::getWithDereferenceableBytes(context, 480));
+    memcpyCall_instr_6->addParamAttr(1, llvm::Attribute::NonNull);
+    memcpyCall_instr_6->addParamAttr(1, llvm::Attribute::getWithAlignment(context, llvm::Align(16)));
+    memcpyCall_instr_6->addParamAttr(1, llvm::Attribute::getWithDereferenceableBytes(context, 480));
+
 
     // %78 = add nuw nsw i64 %63, 3
     Value *val78 = builder.CreateNUWAdd(val63, builder.getInt64(3));
@@ -580,8 +615,8 @@ int main()
 
     // Call llvm.lifetime.end to end the lifetime of %7
     Value *lifetimeArgs[] = {builder.getInt64(57600), bitcast7};
-    builder.CreateCall(llvm_lifetime_end_p0i8_Func, lifetimeArgs);
-
+    llvm::CallInst * lifetimeStartCall_instr_3 = builder.CreateCall(llvm_lifetime_end_p0i8_Func, lifetimeArgs);
+    lifetimeStartCall_instr_3->addParamAttr(1, llvm::Attribute::NonNull);
     // Branch to %81
     builder.CreateBr(BB81);
 
@@ -590,7 +625,6 @@ int main()
 
     // Create a phi node for %82
     PHINode *val82 = builder.CreatePHI(builder.getInt64Ty(), 2);
-
 
     // Truncate %82 to i32 to get %83
     Value *val83 = builder.CreateTrunc(val82, builder.getInt32Ty());
@@ -630,7 +664,7 @@ int main()
 
     // %90 = getelementptr inbounds [120 x [120 x i32]], [120 x [120 x i32]]* %2, i64 0, i64 %82, i64 %89
     Value *indices90[] = {builder.getInt64(0), val82, val89};
-    Value *val90 = builder.CreateGEP(alloca2, indices90);
+    Value *val90 = builder.CreateInBoundsGEP(alloca2, indices90);
 
     // %91 = load i32, i32* %90, align 4, !tbaa !2
     Value *val91 = builder.CreateLoad(val90);
@@ -648,13 +682,11 @@ int main()
     val89->addIncoming(builder.getInt64(0), BB81);
     val89->addIncoming(val93, BB88); // Assuming val93 is defined in the previous basic block
 
-
     // %94 = icmp eq i64 %93, 120
     Value *val94 = builder.CreateICmpEQ(val93, builder.getInt64(120));
 
     // Conditional branch based on %94
     builder.CreateCondBr(val94, BB85, BB88);
-    
 
     // Dump LLVM IR
     module->print(outs(), nullptr);
@@ -665,7 +697,8 @@ int main()
     InitializeNativeTargetAsmPrinter();
 
     ExecutionEngine *ee = EngineBuilder(std::unique_ptr<Module>(module)).create();
-    ee->InstallLazyFunctionCreator([&](const std::string &fnName) -> void * {
+    ee->InstallLazyFunctionCreator([&](const std::string &fnName) -> void *
+                                   {
         if (fnName == "Lib_Rand") {
             return reinterpret_cast<void *>(Lib_Rand);
         }
@@ -678,8 +711,7 @@ int main()
         if (fnName == "Lib_CountAliveNeighbors") {
             return reinterpret_cast<void *>(Lib_CountAliveNeighbors);
         }
-        return nullptr;
-    });
+        return nullptr; });
     ee->finalizeObject();
 
     GameInit();
