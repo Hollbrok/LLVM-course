@@ -81,7 +81,7 @@ void Lib_Display() {
     SDL_RenderPresent(Renderer);
 }
 
-int Lib_Rand(int min, int max) {
+long Lib_Rand(int min, int max) {
     return randomgen(min, max);
 }
 
