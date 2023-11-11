@@ -8,22 +8,88 @@
 %8 = x7
 %9 = NONE
 %10 = BB
-%11 = x8
+%11, %16 = x8
 %12 = x9
 %13 = x10
 %14 = x11
 %15 = x12
-%16 = x8
-%17 = NONE
+%17 = x0
 %18 = BB
 %19 = BB
 
 %20 = x5
 %21 = x6
 
+%22 = x13
+%23 = x14
+
+%24 = x15
+%25 = BB
+
+
+%26, %29 = x16
+%27 = x17
+%28 = BB
+
+%30 = x31
+%31 = BB
+
+%32, %44 = x18
+%33 = x19
+%34 = x20
+%35 = NONE
+%36 = x21
+%37 = x22
+
+%38 = NONE
+%39 = x23
+
+%40 = NONE
+%41 = x24
+
+%42 = x25
+
+%43 = NONE
+
+//%45 = NONE
+%46 = BB
+
+%47, %50 = x27
+%48 = x28
+%49 = BB
+
+//%51 = NONE
+%52 = BB
+
+%53 %57 = x30
+
+%54 = NONE
+%55 = x26
+%56 = x29
+%58 = NONE
+%59 = BB
+
 PHI CONNECTIONS:
 %11, %16 (0 by default from BB#0)
 
 %20 %5
 %21 %6
+%26 %29 (0 by default from BB#28)
 
+%32 %44 (0 by default from BB#25)
+%53 %57
+
+0 args:
+[x]DISPLAY
+
+[x] 1 args:
+[x]ALLOCATE [x]LIFETIME_START [x]BR [x]INC
+
+2 args:
+[x]BITCAST [x]PTRTOINT [x]TRUNC [x]STORE [x]INTTOPTR [x]GEP [x]ZEXT [x]AND_EQ SWAP
+
+3 args:
+[x]RAND [x]SGT_BR [x]RAND [x]INC_EQ [x]XOR [x]BR_COND [x]CMP_EQ [x]EQ_BR [x]DRAW
+
+[x] 4 args:
+[x]GEP_DEFAULT [x]GEP_LOAD [x]GEP_STORE [x]CNT_ALIVE [x]EQ_SELECT
