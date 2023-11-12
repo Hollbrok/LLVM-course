@@ -88,6 +88,17 @@ int Lib_Rand(int min, int max)
     return randomgen(min, max);
 }
 
+void PrintGrid(int (*grid)[GRID_X][GRID_Y]) {
+    printf("XXXXXXXXXXXX\n");
+    for (int x = 0; x < GRID_X; ++x) {
+        for (int y = 0; y < GRID_Y; ++y) {
+            printf("%d ", (*grid)[x][y]);
+        }
+    }
+    printf("##################\nDONE\n");
+}
+
+
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
 #include "llvm/ExecutionEngine/GenericValue.h"
 #include "llvm/IR/IRBuilder.h"
@@ -104,51 +115,25 @@ using namespace llvm;
 const int REG_FILE_SIZE = 32;
 uint64_t REG_FILE[REG_FILE_SIZE];
 
-void declare_lib_funcs(llvm::IRBuilder<> &builder, llvm::Module *module)
-{
-    // Funcions types
-    // declare dso_local i32 @Lib_Rand(i32, i32) local_unnamed_addr #2
-    Type *voidType = builder.getVoidTy();
-    ArrayType *row_120_Type = ArrayType::get(builder.getInt32Ty(), 120);
+int COUNTER = 0;
+void RegDump() {
+    COUNTER++;
+    printf("[!!] Counter: %d\n", COUNTER);
+    
+    printf("[!!] x1: %lu\n", REG_FILE[1]);
+    printf("[!!] x2: %lu\n", REG_FILE[2]);
+    printf("[!!] x5: %lu\n", REG_FILE[5]);
+    printf("[!!] x6: %lu\n", REG_FILE[6]);
+    printf("$$$$$$$$$$$$$$$$$\n");
+ 
 
-    FunctionType *libRandType = FunctionType::get(builder.getInt64Ty(), {builder.getInt32Ty(), builder.getInt32Ty()}, false);
-    FunctionCallee libRandFunc = module->getOrInsertFunction("Lib_Rand", libRandType);
-
-    // declare dso_local void @Lib_DrawCell(i32, i32, i32) local_unnamed_addr #2
-    FunctionType *libDrawCellType = FunctionType::get(voidType, {builder.getInt32Ty(), builder.getInt32Ty(), builder.getInt32Ty()}, false);
-    FunctionCallee libDrawCellFunc = module->getOrInsertFunction("Lib_DrawCell", libDrawCellType);
-
-    // declare dso_local void @Lib_Display(...) local_unnamed_addr #2
-
-    FunctionType *libDisplayFuncType = FunctionType::get(builder.getVoidTy(), /* isVarArg */ true);
-    FunctionCallee libDisplayFunc = module->getOrInsertFunction("Lib_Display", libDisplayFuncType);
-
-    // declare dso_local i32 @Lib_CountAliveNeighbors([120 x i32]*, i32, i32) local_unnamed_addr #2
-    ArrayRef<Type *> Lib_CountAliveNeighbors_ParamTypes = {
-        row_120_Type,
-        builder.getInt32Ty(),
-        builder.getInt32Ty(),
-    };
-    FunctionType *Lib_CountAliveNeighbors_Type =
-        FunctionType::get(builder.getInt32Ty(), Lib_CountAliveNeighbors_ParamTypes, false);
-    FunctionCallee Lib_CountAliveNeighbors_Func =
-        module->getOrInsertFunction("Lib_CountAliveNeighbors", Lib_CountAliveNeighbors_Type);
-
-    // declare void @llvm.lifetime.start.p0i8(i64 immarg, i8* nocapture) #1
-    ArrayRef<Type *> llvm_lifetime_start_ParamTypes = {builder.getInt64Ty(),
-                                                       builder.getInt8Ty()->getPointerTo()};
-    FunctionType *llvm_lifetime_start_Type =
-        FunctionType::get(builder.getVoidTy(), llvm_lifetime_start_ParamTypes, false);
-
-    FunctionCallee llvm_lifetime_start_p0i8_Func =
-        module->getOrInsertFunction("llvm.lifetime.start.p0i8", llvm_lifetime_start_Type);
-
-    // define dso_local void @app() local_unnamed_addr #0 {
-    // FunctionType *appFuncType = FunctionType::get(builder.getVoidTy(), false);
-    // Function *appFunc =
-    //     Function::Create(appFuncType, Function::ExternalLinkage, "app", module);
-
-    return;
+    // if (!(COUNTER % 100)) {
+    //     printf("[x] %d\n", COUNTER);
+    // }
+    // return;
+    // for (int i = 0; i < REG_FILE_SIZE; ++i) {
+    //     printf("x%d: %lu\n", i, REG_FILE[i]);
+    // }
 }
 
 int main(int argc, char *argv[])
@@ -191,41 +176,60 @@ int main(int argc, char *argv[])
     while (input >> name)
     {
 #define FETCH_INSTR(instr) !name.compare(instr)
-        if (FETCH_INSTR("GEP_DEFAULT") || FETCH_INSTR("GEP_LOAD") || FETCH_INSTR("GEP_STORE") ||
-            FETCH_INSTR("GEP") || FETCH_INSTR("CNT_ALIVE") || FETCH_INSTR("EQ_SELECT"))
+        if (FETCH_INSTR("GEP_DEFAULT") || FETCH_INSTR("GEP_LOAD") || FETCH_INSTR("GEP_STORE")
+            || FETCH_INSTR("CNT_ALIVE") || FETCH_INSTR("EQ_SELECT"))
         {
-            input >> arg >> arg >> arg >> arg;
-            // outs() << name << " " << arg << " " << arg << " " << arg << " " << arg << "\n";
+            outs() << name << " ";
+
+            input >> arg;
+            outs() << arg << " ";
+            input >> arg;
+            outs() << arg << " ";
+            input >> arg;
+            outs() << arg << " ";
+            input >> arg;
+            outs() << arg << " " << "\n";
             continue;
         }
         if (FETCH_INSTR("RAND") || FETCH_INSTR("XOR") || FETCH_INSTR("SGT_BR") || FETCH_INSTR("RAND") || FETCH_INSTR("INC_EQ") ||
             FETCH_INSTR("BR_COND") || FETCH_INSTR("CMP_EQ") || FETCH_INSTR("EQ_BR") || FETCH_INSTR("DRAW"))
         {
-            input >> arg >> arg >> arg;
-            // outs() << name << " " << arg << " " << arg << " " << arg << "\n";
+            outs() << name << " ";
+
+            input >> arg;
+            outs() << arg << " ";
+            input >> arg;
+            outs() << arg << " ";
+            input >> arg;
+            outs() << arg << " " << "\n";
             continue;
         }
         if (FETCH_INSTR("BITCAST") || FETCH_INSTR("PTRTOINT") || FETCH_INSTR("TRUNC") ||
             FETCH_INSTR("STORE") || FETCH_INSTR("INTTOPTR") || FETCH_INSTR("GEP") || FETCH_INSTR("ZEXT") ||
             FETCH_INSTR("AND_EQ") || FETCH_INSTR("SWAP"))
         {
-            input >> arg >> arg;
-            // outs() << name << " " << arg << " " << arg << "\n";
-            continue;
-        }
-        if (FETCH_INSTR("ALLOCATE") || FETCH_INSTR("LIFETIME_START") || FETCH_INSTR("BR") || FETCH_INSTR("INC"))
-        {
+            outs() << name << " ";
+
             input >> arg;
-            // outs() << name << " " << arg << "\n";
+            outs() << arg << " ";
+            input >> arg;
+            outs() << arg << " " << "\n";
             continue;
         }
-        if (FETCH_INSTR("DISPLAY") || FETCH_INSTR("EXIT"))
+        if (FETCH_INSTR("ALLOCATE") || FETCH_INSTR("LIFETIME_START") || FETCH_INSTR("BR") || FETCH_INSTR("INC")  || FETCH_INSTR("PRINT_GRID"))
         {
+            outs() << name << " ";
+            input >> arg;
+            outs() << arg << " " << "\n";
             continue;
-            // outs() << name << "\n";
+        }
+        if (FETCH_INSTR("DISPLAY") || FETCH_INSTR("EXIT") || FETCH_INSTR("REG_DUMP"))
+        {
+            outs() << name << "\n";
+            continue;
         }
 
-        outs() << name << "\n";
+        outs() << "BB: " << name << "\n";
         BBMap[name] = BasicBlock::Create(context, name, mainFunc);
     }
     outs() << "\n";
@@ -253,9 +257,13 @@ int main(int argc, char *argv[])
     FunctionType *libDisplayFuncType = FunctionType::get(builder.getVoidTy(), /* isVarArg */ true);
     FunctionCallee libDisplayFunc = module->getOrInsertFunction("Lib_Display", libDisplayFuncType);
 
+    FunctionType *RegDumpFuncType = FunctionType::get(builder.getVoidTy(), /* isVarArg */ false);
+    FunctionCallee RegDumpFunc = module->getOrInsertFunction("RegDump", RegDumpFuncType);
+
+
     // declare dso_local i32 @Lib_CountAliveNeighbors([120 x i32]*, i32, i32) local_unnamed_addr #2
     ArrayRef<Type *> Lib_CountAliveNeighbors_ParamTypes = {
-        row_120_Type,
+        row_120_p_Type,
         builder.getInt32Ty(),
         builder.getInt32Ty(),
     };
@@ -263,6 +271,16 @@ int main(int argc, char *argv[])
         FunctionType::get(builder.getInt32Ty(), Lib_CountAliveNeighbors_ParamTypes, false);
     FunctionCallee Lib_CountAliveNeighbors_Func =
         module->getOrInsertFunction("Lib_CountAliveNeighbors", Lib_CountAliveNeighbors_Type);
+
+    // declare dso_local i32 @PrintGrid([120 x [120 x i32]]*) local_unnamed_addr #2
+    ArrayRef<Type *> PrintGridParamTypes = {
+        row_120_120_p_Type,
+    };
+    FunctionType *PrintGrid_Type =
+        FunctionType::get(voidType, PrintGridParamTypes, false);
+    FunctionCallee PrintGrid_Func =
+        module->getOrInsertFunction("PrintGrid", PrintGrid_Type);
+
 
     // declare void @llvm.lifetime.start.p0i8(i64 immarg, i8* nocapture) #1
     ArrayRef<Type *> llvm_lifetime_start_ParamTypes = {builder.getInt64Ty(),
@@ -279,12 +297,29 @@ int main(int argc, char *argv[])
         if (!name.compare("EXIT"))
         {
             outs() << "\tEXIT\n";
+
             builder.CreateRetVoid();
             if (input >> name)
             {
                 outs() << "BB " << name << "\n";
                 builder.SetInsertPoint(BBMap[name]);
             }
+            continue;
+        }
+        if (!name.compare("REG_DUMP")) {
+            builder.CreateCall(module->getFunction("RegDump"));
+            continue;
+        }
+        if (!name.compare("PRINT_GRID"))
+        {
+            input >> arg;
+            outs() << "\tPRINT_GRID: " << arg;
+            // res
+            Value *arg1_p = builder.CreateConstGEP2_32(regFileType, regFile, 0,
+                                                      std::stoi(arg.substr(1)));
+
+            Value *PrintGridArgs[] = {builder.CreateLoad(row_120_120_p_Type, arg1_p)};
+            Value *callCntRand = builder.CreateCall(module->getFunction("PrintGrid"), PrintGridArgs);
             continue;
         }
         if (!name.compare("INC"))
@@ -362,6 +397,8 @@ int main(int argc, char *argv[])
             llvm::AllocaInst *alloca = builder.CreateAlloca(ArrayType::get(ArrayType::get(builder.getInt32Ty(), 120), 120), nullptr);
             alloca->setAlignment(llvm::Align(16));
             builder.CreateStore(alloca, arg1);
+            //Value *ptrtoint = builder.CreatePtrToInt(alloca, builder.getInt64Ty());
+            //builder.CreateStore(ptrtoint, arg1);
             continue;
         }
         if (!name.compare("BITCAST"))
@@ -377,6 +414,7 @@ int main(int argc, char *argv[])
             // arg1
             Value *arg1_p = builder.CreateConstGEP2_32(regFileType, regFile, 0,
                                                        std::stoi(arg.substr(1)));
+
             Value *bitcast = builder.CreateBitCast(builder.CreateLoad(row_120_120_p_Type, arg1_p), builder.getInt8PtrTy());
             builder.CreateStore(bitcast, res_p);
             continue;
@@ -647,12 +685,11 @@ int main(int argc, char *argv[])
             // arg1
             Value *arg1_p = builder.CreateConstGEP2_32(regFileType, regFile, 0,
                                                        std::stoi(arg.substr(1)));
-            Value *arg1 =
+            Value *add_result =
                 builder.CreateAdd(builder.CreateLoad(builder.getInt32Ty(), arg1_p),
                                   builder.getInt32(1));
-            builder.CreateStore(arg1, arg1_p);
+            builder.CreateStore(add_result, arg1_p);
             input >> arg;
-            outs() << " == " << arg << "\n";
             // arg2
             Value *arg2;
             Value *cond;
@@ -660,12 +697,12 @@ int main(int argc, char *argv[])
             { // 3rd argument is a register
                 arg2 = builder.CreateConstGEP2_32(regFileType, regFile, 0,
                                                   std::stoi(arg.substr(1)));
-                cond = builder.CreateICmpEQ(arg1, builder.CreateLoad(builder.getInt32Ty(), arg2));
+                cond = builder.CreateICmpEQ(add_result, builder.CreateLoad(builder.getInt32Ty(), arg2));
             }
             else
             { // 3rd argument is a number
                 arg2 = builder.getInt32(std::stoi(arg));
-                cond = builder.CreateICmpEQ(arg1, arg2);
+                cond = builder.CreateICmpEQ(add_result, arg2);
             }
             // Value *arg2 = builder.getInt32(std::stoi(arg));
             // Value *cond = builder.CreateICmpEQ(arg1, arg2);
@@ -852,6 +889,12 @@ int main(int argc, char *argv[])
         }
         if (fnName == "Lib_DrawCell") {
             return reinterpret_cast<void *>(Lib_DrawCell);
+        }
+        if (fnName == "PrintGrid") {
+            return reinterpret_cast<void *>(PrintGrid);
+        }
+        if (fnName == "RegDump") {
+            return reinterpret_cast<void *>(RegDump);
         }
         return nullptr; });
 

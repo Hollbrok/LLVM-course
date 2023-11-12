@@ -26,6 +26,7 @@ label19
   INTTOPTR x13 x5  
   INTTOPTR x14 x6  
   GEP x15 x13 
+  XOR x16 x16 x16
   BR label25
 label25                                             
   TRUNC x17 x16 
@@ -33,7 +34,6 @@ label25
   BR label31
 label28                                              
   INC_EQ x31 x16 120
-  XOR x16 x16 x16
   XOR x27 x27 x27
   BR_COND x31 label46 label25
 label31                                              

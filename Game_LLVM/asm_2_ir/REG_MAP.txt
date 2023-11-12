@@ -79,6 +79,9 @@ PHI CONNECTIONS:
 %32 %44 (0 by default from BB#25)
 %53 %57
 
+REG_DUMP
+PRINT_GRID
+
 0 args:
 [x]DISPLAY
 
