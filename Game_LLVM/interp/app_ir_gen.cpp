@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <SDL2/SDL.h>
 #include <time.h>
-#include "../Game/lib.h"
+#include "../lib.h"
 
 #define FRAME_TICKS 50
 
@@ -109,7 +109,7 @@ int main()
 
     // declare dso_local i32 @Lib_Rand(i32, i32) local_unnamed_addr #2
     Type *voidType = Type::getVoidTy(context);
-    ArrayType *row_120_Type = ArrayType::get(Type::getInt32Ty(context), 120);
+    ArrayType *row_120_Type = ArrayType::get(builder.getInt32Ty(), 120);
 
     FunctionType *libRandType = FunctionType::get(builder.getInt32Ty(), {builder.getInt32Ty(), builder.getInt32Ty()}, false);
     FunctionCallee libRandFunc = module->getOrInsertFunction("Lib_Rand", libRandType);
