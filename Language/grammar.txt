@@ -1,0 +1,44 @@
+<program>            ::= <function_definition>+
+
+<function_definition> ::= <return_type> <identifier> "(" <parameters> ")" "{" <statements> "}"
+
+<return_type>        ::= <data_type> | "void"
+
+<parameters>         ::= <parameter_list> | "void"
+<parameter_list>     ::= <parameter> | <parameter> "," <parameter_list>
+<parameter>          ::= <data_type> <identifier> <array_specifier>?
+
+<array_specifier>    ::= "[" <array_size> "]" <array_specifier>?
+<array_size>         ::= <integer> | <identifier>
+
+<data_type>          ::= "int" | "long" | "char"  /* Extendable for more data types */
+
+<statements>         ::= <statement> | <statement> <statements>
+<statement>          ::= <loop_statement> | <assignment_statement> | <expression_statement>
+
+<loop_statement>     ::= "for" "(" <initialization> ";" <condition> ";" <update> ")" "{" <statements> "}"
+
+<initialization>     ::= <data_type> <identifier> "=" <value> ";"
+<condition>          ::= <expression> ";"
+<update>             ::= <identifier> "=" <expression> | "++" <identifier> | <identifier> "++"
+
+<assignment_statement>   ::= <identifier> "=" <expression> ";"
+<expression_statement>   ::= <function_call> ";"
+
+<expression>         ::= <term> | <expression> <add_operator> <term>
+<term>               ::= <factor> | <term> <mul_operator> <factor>
+<factor>             ::= <identifier> | <integer> | "(" <expression> ")"
+
+<function_call>      ::= <identifier> "(" <arguments> ")"
+<arguments>          ::= <expression> | <expression> "," <arguments>
+
+<identifier>         ::= <valid_variable_name>
+
+<valid_variable_name> ::= <letter> | <valid_variable_name> <letter> | <valid_variable_name> <digit>
+<letter>             ::= "a" | "b" | ... | "z" | "A" | "B" | ... | "Z"
+<digit>              ::= "0" | "1" | ... | "9"
+<integer>            ::= <digit> | <digit> <integer>
+
+<add_operator>       ::= "+" | "-"
+<mul_operator>       ::= "*" | "/"
+<relational_operator>::= "<" | "<=" | "==" | "!=" | ">=" | ">"
